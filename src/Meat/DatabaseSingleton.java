@@ -1,3 +1,5 @@
+package Meat;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -7,6 +9,7 @@ import java.sql.*;
 
 public class DatabaseSingleton {
     private static DatabaseSingleton instance;
+    private static Connection connection;
     private static File dbFile = new File("oblig3v1_database.db");
     private static File sqlFile = new File("oblig3v1_database.sql");
     private static String url = "jdbc:sqlite:oblig3v1_database.db";
@@ -19,6 +22,12 @@ public class DatabaseSingleton {
     }
 
     private DatabaseSingleton() {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            System.out.println("Feil i lasting av JDBC-driver " + e);
+        }
+
         if(!dbFile.exists()) {
             try (Connection conn = DriverManager.getConnection(url)) {
                 if (conn != null) {
@@ -29,11 +38,10 @@ public class DatabaseSingleton {
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
+            executeSQLFile();
         } else {
             System.out.println("Database-file exists.");
         }
-
-        executeSQLFile();
     }
 
     private void executeSQLFile() {
@@ -53,5 +61,9 @@ public class DatabaseSingleton {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public String getUrl() {
+        return url;
     }
 }
