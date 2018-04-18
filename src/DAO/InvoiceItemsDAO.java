@@ -4,11 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class InvoiceItemsDAO extends DAO{
-    public InvoiceItems getInvoiceItems(int id) {
+    public ArrayList<String[]> getInvoiceItems(int id) {
         String sql = "SELECT * FROM invoice_items WHERE invoice = ?";
-        InvoiceItems list = new InvoiceItems();
+        ArrayList<String[]> list = new ArrayList<>();
 
         try (Connection conn = connect(); PreparedStatement pstmt  = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);

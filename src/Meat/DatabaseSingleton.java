@@ -9,7 +9,6 @@ import java.sql.*;
 
 public class DatabaseSingleton {
     private static DatabaseSingleton instance;
-    private static Connection connection;
     private static File dbFile = new File("oblig3v1_database.db");
     private static File sqlFile = new File("oblig3v1_database.sql");
     private static String url = "jdbc:sqlite:oblig3v1_database.db";
