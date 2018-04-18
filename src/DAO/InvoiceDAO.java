@@ -4,17 +4,20 @@ import java.sql.*;
 
 public class InvoiceDAO extends DAO {
 
-    private void insertInvoice() {
+    public void insertInvoice() {
 
     }
 
-    private String[] getInvoice(int id) {
+    public String[] getInvoice(int id) {
         String sql = "SELECT * FROM invoice WHERE invoice_id = ?";
-        String[] result = null;
-        try (Connection conn = this.connect(); PreparedStatement pstmt  = conn.prepareStatement(sql)) {
+        String[] result = new String[3];
+        try (Connection conn = connect(); PreparedStatement pstmt  = conn.prepareStatement(sql)) {
             pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery(sql);
-            
+            ResultSet rs = pstmt.executeQuery();
+            result[0] = rs.getString("invoice_id");
+            result[1] = rs.getString("customer");
+            result[2] = rs.getString("dato");
+            rs.close();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
