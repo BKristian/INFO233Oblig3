@@ -1,0 +1,7 @@
+For øyeblikket har jeg brukt singleton design for DatabaseSingleton. Dette er noe som kommer til å bli endret på i løpet
+av egenrettingen. Funksjonelt design blir brukt til EventHandleren til Buttons, og det kan vel sies at observatør design
+brukes med tankte på at jeg bruker EventHandler?
+
+Har ikke bevisst brukt et designmal noen sted utenom singleton, som nok blir endret til endelig innlevering.
+Hvis arv og DAO teller som deignmal, så har jeg brukt det. Arv blir brukt i klassen DAO for å gi alle subklassene til
+DAO tilgang til connection uten at jeg må gjenta kode. DAOene blir brukt av Gooey til å hente informasjon fra databasen.

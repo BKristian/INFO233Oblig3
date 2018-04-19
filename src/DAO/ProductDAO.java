@@ -17,6 +17,7 @@ public class ProductDAO extends DAO {
         result[2] = rs.getString("description");
         result[3] = rs.getString("price");
         result[4] = rs.getString("category");
+        rs.close();
     } catch (SQLException e) {
         System.out.println(e.getMessage());
     }

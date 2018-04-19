@@ -3,13 +3,10 @@ package Meat;
 import DAO.*;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -23,6 +20,7 @@ public class Gooey extends Application {
     private CustomerDAO customerDAO = new CustomerDAO();
     private InvoiceItemsDAO invoiceItemsDAO = new InvoiceItemsDAO();
     private ProductDAO productDAO = new ProductDAO();
+    private AddressDAO addressDAO = new AddressDAO();
 
     public static void main(String[] args) {
         DatabaseSingleton.getInstance();
@@ -48,6 +46,7 @@ public class Gooey extends Application {
 
         String[] invoiceArr = invoiceDAO.getInvoice(id);
         String[] customArr = customerDAO.getCustomer(Integer.parseInt(invoiceArr[1]));
+        String[] addArr = addressDAO.getAddress(Integer.parseInt(customArr[2]));
         ArrayList<String[]> invItems = invoiceItemsDAO.getInvoiceItems(id);
         ArrayList<String[]> prodList = new ArrayList<>();
         for (String[] str : invItems) {
@@ -66,31 +65,18 @@ public class Gooey extends Application {
         scenetitle.setFont(Font.font(28));
         grid.add(scenetitle, 0, ++rowInd);
 
-        Label invoiceId = gLabel("Faktura nr.: " + invoiceArr[0]);
-        grid.add(invoiceId, 0, ++rowInd);
-
-        Label date = gLabel("Dato: " + invoiceArr[2]);
-        grid.add(date, 0, ++rowInd);
-
-        Label customer = gLabel("Kunde: " + customArr[1]);
-        grid.add(customer, 0, ++rowInd);
-
-        Label customerNr = gLabel("Kunde nr.: " + invoiceArr[1]);
-        grid.add(customerNr, 0, ++rowInd);
+        gLabel("Faktura nr.: ", invoiceArr[0], grid, ++rowInd);
+        gLabel("Dato: ", invoiceArr[2], grid, ++rowInd);
+        gLabel("Kunde: ", customArr[1], grid, ++rowInd);
+        gLabel("Kunde nr.: ", invoiceArr[1], grid, ++rowInd);
+        gLabel("Addresse: ", addArr[5], grid, ++rowInd);
 
         double sum = 0;
         for (String[] str : prodList) {
-            Label product = gLabel("Produkt: " + str[1]);
-            grid.add(product, 0, ++rowInd);
-
-            Label productPrice = gLabel(", " + str[3] + "kr");
-            grid.add(productPrice, 1, rowInd);
-
+            gLabel("Produkt: ", str[1] + ", " +str[3] + "kr", grid, ++rowInd);
             sum += Double.parseDouble(str[3]);
         }
-
-        Label sumLabel = gLabel("Totalsum: " + sum + "kr");
-        grid.add(sumLabel, 0, ++rowInd);
+        gLabel("Totalsum: ", sum + "kr", grid, ++rowInd);
 
         scrollPane.setContent(grid);
         Scene scene = new Scene(scrollPane);
@@ -106,14 +92,31 @@ public class Gooey extends Application {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
+        TableView table = new TableView();
+        table.setEditable(true);
+
+        TableColumn cusIdCol = new TableColumn("Kunde nr.");
+        TableColumn cusNameCol = new TableColumn("Kunde");
+        TableColumn cusAddCol = new TableColumn("Addresse");
+        TableColumn cusNr = new TableColumn("Tlf. nr.");
+        TableColumn cusAccount = new TableColumn("Konto");
+
+        table.getColumns().setAll(cusIdCol, cusNameCol, cusAddCol, cusNr, cusAccount);
+
+        //TODO vise noe i table
+
+        grid.add(table, 0, 0);
         scrollPane.setContent(grid);
         Scene scene = new Scene(scrollPane);
         primaryStage.setScene(scene);
     }
 
-    private Label gLabel(String a) {
-        Label label = new Label(a);
-        label.setFont(Font.font(16));
-        return label;
+    private void gLabel(String a, String b, GridPane c, int row) {
+        Label labelA = new Label(a);
+        Label labelB = new Label(b);
+        labelA.setFont(Font.font(16));
+        labelB.setFont(Font.font(16));
+        c.add(labelA, 0, row);
+        c.add(labelB, 1, row);
     }
 }
