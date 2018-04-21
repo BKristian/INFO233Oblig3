@@ -10,7 +10,7 @@ public class ProductDAO {
         Product product;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM product, category" +
-                     "WHERE product.product_id = ? AND product.category = category.category_id")) {
+                     " WHERE product.product_id = ? AND product.category = category.category_id")) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
             product = new Product(id, rs.getString("product_name"), rs.getString("description"),

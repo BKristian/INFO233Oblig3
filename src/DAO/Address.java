@@ -2,7 +2,7 @@ package DAO;
 
 public class Address {
     private int id;
-    private String streetNr, streetName, postCode, postTown;
+    private String streetNr, streetName, postCode, postTown, fullAddress;
 
     public Address(int id, String streetNr, String streetName, String postCode, String postTown) {
         this.id = id;
@@ -10,6 +10,7 @@ public class Address {
         this.streetName = streetName;
         this.postCode = postCode;
         this.postTown = postTown;
+        fullAddress = streetName + " " + streetNr + ", " + postCode + " " + postTown;
     }
 
     public int getId() {
@@ -50,5 +51,13 @@ public class Address {
 
     public void setPostTown(String postTown) {
         this.postTown = postTown;
+    }
+
+    public String getFullAddress() {
+        return fullAddress;
+    }
+
+    public void setFullAddress(String fullAddress) {
+        this.fullAddress = fullAddress;
     }
 }

@@ -9,20 +9,25 @@ public class InvoiceDAO {
     public Invoice getInvoice(int id) {
         Invoice invoice;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
-             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM invoice WHERE invoice_id = ?");
-             PreparedStatement pstmtProd = connection.prepareStatement("SELECT product FROM invoice_items WHERE invoice = ?")) {
+             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM invoice_items WHERE invoice = ?");
+             PreparedStatement pstmtInv = connection.prepareStatement("SELECT * FROM invoice WHERE invoice_id = ?");
+             PreparedStatement pstmtProd = connection.prepareStatement("SELECT * FROM product WHERE product_id = ?")) {
             pstmt.setInt(1, id);
-            pstmtProd.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
+
+            pstmtInv.setInt(1, rs.getInt("invoice"));
+            ResultSet rsInv = pstmtInv.executeQuery();
+
+            pstmtProd.setInt(1, rs.getInt("product"));
             ResultSet rsProd = pstmtProd.executeQuery();
-            invoice = new Invoice(id, rs.getInt("customer"), rs.getString("dato"));
+
+            invoice = new Invoice(id, rsInv.getInt("customer"), rsInv.getString("dato"));
+
             while (rsProd.next()) {
-                Product product = new Product(rsProd.getInt("product_id"),
-                        rsProd.getString("product_name"), rsProd.getString("description"),
-                        rsProd.getString("category"), rsProd.getDouble("price"));
-                invoice.add(product);
+                invoice.add(new ProductDAO().getProduct(rsProd.getInt("product_id")));
             }
             rs.close();
+            rsInv.close();
             rsProd.close();
         } catch (SQLException e) {
             System.out.println("SQLException in InvoiceDAO.getInvoice: " + e.getMessage());
