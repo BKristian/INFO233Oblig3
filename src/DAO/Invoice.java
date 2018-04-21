@@ -49,4 +49,8 @@ public class Invoice {
     public void setItems(ArrayList<Product> items) {
         this.items = items;
     }
+
+    public String toString() {
+        return id + "";
+    }
 }

@@ -2,8 +2,12 @@ package Meat;
 
 import DAO.*;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.layout.BorderPane;
@@ -17,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class Gooey extends Application {
     private static File dbFile = new File("oblig3v1_database.db");
@@ -39,6 +44,7 @@ public class Gooey extends Application {
         setUp();
 
         BorderPane borderPane = new BorderPane();
+        borderPane.setPadding(new Insets(0, 5, 5, 5));
         ToolBar toolBar = new ToolBar();
         borderPane.setTop(toolBar);
 
@@ -48,32 +54,80 @@ public class Gooey extends Application {
         scrollPane.setFitToHeight(true);
         scrollPane.setFitToWidth(true);
 
-        //Invoice stuff start
+        // Invoice stuff start
         HBox invoiceBox = new HBox();
         invoiceBox.setSpacing(10);
+        invoiceBox.setPadding(new Insets(0, 5, 0, 5));
         loadInvoice(1, invoiceBox);
-        //Invoice stuff end
+
+        ListView<Invoice> invoiceList = new ListView<>();
+        invoiceList.setItems(FXCollections.observableArrayList(invoiceDAO.getAllInvoices()));
+
+        HBox invoiceButtons = new HBox();
+        Button invoiceAdd = new Button("New invoice");
+        Button invoiceRemove = new Button("Remove invoice");
+        invoiceButtons.getChildren().setAll(invoiceAdd, invoiceRemove);
 
         Button invoiceBtn = new Button("Invoices");
+        invoiceBtn.setOnAction(e -> {borderPane.setCenter(invoiceBox);
+            borderPane.setLeft(invoiceList);
+            borderPane.setBottom(invoiceButtons);});
+        // Invoice stuff end
+
+        // Customer stuff start
+        HBox customerBox = new HBox();
+        customerBox.setSpacing(10);
+        customerBox.setPadding(new Insets(0, 5, 0, 5));
+        loadCustomer(1, customerBox);
+
+        ListView<Customer> customerList = new ListView<>();
+        customerList.setItems(FXCollections.observableArrayList(customerDAO.getAllCustomers()));
+
+        HBox customerButtons = new HBox();
+        Button customerAdd = new Button("New customer");
+        Button customerRemove = new Button("Remove customer");
+        customerButtons.getChildren().setAll(customerAdd, customerRemove);
+
         Button customerBtn = new Button("Customers");
-        Button prodcutBtn = new Button("Products");
+        customerBtn.setOnAction(e -> {borderPane.setCenter(customerBox);
+            borderPane.setLeft(customerList);
+            borderPane.setBottom(customerButtons);});
+        // Customer stuff end
 
-        //TODO button events go here
-        invoiceBtn.setOnAction(e -> borderPane.setCenter(invoiceBox));
+        // Product stuff start
+        HBox productBox = new HBox();
+        productBox.setSpacing(10);
+        productBox.setPadding(new Insets(0, 5, 0, 5));
+        loadProduct(1, productBox);
 
-        toolBar.getItems().addAll(invoiceBtn, customerBtn, prodcutBtn);
+        ListView<Product> productList = new ListView<>();
+        productList.setItems(FXCollections.observableArrayList(productDAO.getAllProducts()));
 
+        HBox productButtons = new HBox();
+        Button productAdd = new Button("New product");
+        Button productRemove = new Button("Remove product");
+        productButtons.getChildren().setAll(productAdd, productRemove);
+
+        Button productBtn = new Button("Products");
+        productBtn.setOnAction(e -> {borderPane.setCenter(productBox);
+            borderPane.setLeft(productList);
+            borderPane.setBottom(productButtons);});
+        // Product stuff end
+
+        toolBar.getItems().addAll(invoiceBtn, customerBtn, productBtn);
+
+        // Default to show invoices
         borderPane.setCenter(invoiceBox);
-        primaryStage.setScene(new Scene(scrollPane, 800, 800));
+        borderPane.setLeft(invoiceList);
+        borderPane.setBottom(invoiceButtons);
+        primaryStage.setScene(new Scene(scrollPane, 800, 400));
     }
 
     private void loadInvoice(int id, HBox invoiceBox) {
-        invoiceBox.getChildren().setAll();
         Invoice invoice = invoiceDAO.getInvoice(id);
         Customer customer = customerDAO.getCustomer(invoice.getCustomerId());
-        Address address = addressDAO.getAddress(customer.getAddressId());
 
-        VBox left = new VBox(new Text("Invoice number:\nInvoice date:\nCustomer:\nCustomer address:\n" +
+        VBox left = new VBox(new Text("Invoice number:\nInvoice date:\nCustomer:\nCustomer ID:\nCustomer address:\n" +
                 "Customer account:\nTotal sum:\nProducts:"));
 
         StringBuilder allProducts = new StringBuilder();
@@ -84,10 +138,30 @@ public class Gooey extends Application {
         }
 
         VBox right = new VBox(new Text(invoice.getId() + "\n" + invoice.getDate() + "\n" + customer.getName() +
-                "\n" + address.getFullAddress() + "\n" + customer.getAccount() + "\n" + "kr " +  total +
+                "\n" + customer.getId() + "\n" + customer.getAddress().getFullAddress() + "\n" + customer.getAccount() + "\n" + "kr " +  total +
                 "\n" + allProducts.toString()));
 
         invoiceBox.getChildren().setAll(left, right);
+    }
+
+    private void loadCustomer(int id, HBox customerBox) {
+        Customer customer = customerDAO.getCustomer(id);
+
+        VBox left = new VBox(new Text("Customer ID:\nCustomer name:\nPhone number:\nAddress:\nAccount:"));
+        VBox right = new VBox(new Text(customer.getId() + "\n" + customer.getName() + "\n" + customer.getPhone() +
+                "\n" + customer.getAddress().getFullAddress() + "\n" + customer.getAccount()));
+
+        customerBox.getChildren().setAll(left, right);
+    }
+
+    private void loadProduct(int id, HBox productBox) {
+        Product product = productDAO.getProduct(id);
+
+        VBox left = new VBox(new Text("Product ID:\nProduct name:\nDescription:\nPrice:"));
+        VBox right = new VBox(new Text(product.getId() + "\n" + product.getName() + "\n" + product.getDescription() +
+                "\nkr " + product.getPrice()));
+
+        productBox.getChildren().setAll(left, right);
     }
 
     private void setUp() {

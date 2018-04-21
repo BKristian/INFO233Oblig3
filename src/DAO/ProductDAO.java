@@ -27,7 +27,7 @@ public class ProductDAO {
         ArrayList<Product> products;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM product, category WHERE" +
-                     "product.category = category.category_id");
+                     " product.category = category.category_id");
              ResultSet rs = pstmt.executeQuery()) {
             products = new ArrayList<>();
             while (rs.next()) {
