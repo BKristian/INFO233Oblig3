@@ -1,29 +1,42 @@
 package DAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import Meat.Gooey;
+import java.sql.*;
+import java.util.ArrayList;
 
-public class AddressDAO extends DAO{
-    public String[] getAddress(int id) {
-        String sql = "SELECT * FROM address WHERE address_id = ?";
-        String[] result = new String[6];
-        try (Connection conn = connect(); PreparedStatement pstmt  = conn.prepareStatement(sql)) {
+public class AddressDAO {
+
+    public Address getAddress(int id) {
+        Address address;
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+            PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM address WHERE address_id = ?")) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-            result[0] = rs.getString("address_id");
-            result[1] = rs.getString("street_name");
-            result[2] = rs.getString("street_number");
-            result[3] = rs.getString("postal_code");
-            result[4] = rs.getString("postal_town");
+            address = new Address(id, rs.getString("street_number"), rs.getString("street_name"),
+                    rs.getString("postal_code"), rs.getString("postal_town"));
             rs.close();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("SQLException in AddressDAO.getAddress: " + e.getMessage());
+            address = null;
         }
+        return address;
+    }
 
-        closeConnection();
-        result[5] = result[1] + " " + result[2] + " " + result[3] + " " + result[4];
-        return result;
+    public ArrayList<Address> getAllAddresses() {
+        ArrayList<Address> addresses;
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+            PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM address");
+            ResultSet rs = pstmt.executeQuery()) {
+            addresses = new ArrayList<>();
+            while (rs.next()) {
+                addresses.add(new Address(rs.getInt("address_id"), rs.getString("street_number"),
+                        rs.getString("street_name"), rs.getString("postal_code"),
+                        rs.getString("postal_town")));
+            }
+        } catch (SQLException e) {
+            System.out.println("SQLException in AddressDAO.getAllAddresses: " + e.getMessage());
+            addresses = null;
+        }
+        return addresses;
     }
 }

@@ -1,47 +1,42 @@
 package DAO;
 
+import Meat.Gooey;
 import java.sql.*;
 import java.util.ArrayList;
 
-public class CustomerDAO extends DAO{
-    public String[] getCustomer(int id) {
-        String sql = "SELECT * FROM customer WHERE customer_id = ?";
-        String[] result = new String[5];
-        try (Connection conn = connect(); PreparedStatement pstmt  = conn.prepareStatement(sql)) {
+public class CustomerDAO {
+
+    public Customer getCustomer(int id) {
+        Customer customer;
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM customer WHERE customer_id = ?")) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
-            result[0] = rs.getString("customer_id");
-            result[1] = rs.getString("customer_name");
-            result[2] = rs.getString("address");
-            result[3] = rs.getString("phone_number");
-            result[4] = rs.getString("billing_account");
+            customer = new Customer(id, rs.getInt("address"), rs.getString("customer_name"),
+                    rs.getString("phone_number"), rs.getString("billing_account"));
             rs.close();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("SQLException in CustomerDAO.getCustomer: " + e.getMessage());
+            customer = null;
         }
-
-        closeConnection();
-        return result;
+        return customer;
     }
 
-    public ArrayList<String[]> getAllCustomers() {
-        String sql = "SELECT * FROM customer";
-        ArrayList<String[]> list = new ArrayList<>();
-        try (Connection conn = connect(); Statement stmt  = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(sql);
-            while(rs.next()) {
-                String[] result = new String[5];
-                result[0] = rs.getString("customer_id");
-                result[1] = rs.getString("customer_name");
-                result[2] = rs.getString("address");
-                result[3] = rs.getString("phone_number");
-                result[4] = rs.getString("billing_account");
-                list.add(result);
+    public ArrayList<Customer> getAllCustomers() {
+        ArrayList<Customer> customers;
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM customer");
+             ResultSet rs = pstmt.executeQuery()) {
+            customers = new ArrayList<>();
+            while (rs.next()) {
+                customers.add(new Customer(rs.getInt("customer_id"), rs.getInt("address"),
+                        rs.getString("customer_name"), rs.getString("phone_number"),
+                        rs.getString("billing_account")));
             }
-            rs.close();
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            System.out.println("SQLException in CustomerDAO.getAllCustomers: " + e.getMessage());
+            customers = null;
         }
-        return list;
+        return customers;
     }
 }
