@@ -3,13 +3,9 @@ package Meat;
 import DAO.*;
 import javafx.application.Application;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -21,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
 
 public class Gooey extends Application {
     private static File dbFile = new File("oblig3v1_database.db");
@@ -33,6 +28,8 @@ public class Gooey extends Application {
     private InvoiceDAO invoiceDAO = new InvoiceDAO();
     private ProductDAO productDAO = new ProductDAO();
 
+    private BorderPane borderPane = new BorderPane();
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -43,7 +40,6 @@ public class Gooey extends Application {
         primaryStage.show();
         setUp();
 
-        BorderPane borderPane = new BorderPane();
         borderPane.setPadding(new Insets(0, 5, 5, 5));
         ToolBar toolBar = new ToolBar();
         borderPane.setTop(toolBar);
@@ -63,7 +59,13 @@ public class Gooey extends Application {
         ListView<Invoice> invoiceList = new ListView<>();
         invoiceList.setItems(FXCollections.observableArrayList(invoiceDAO.getAllInvoices()));
 
+        VBox insertInvoiceBox = new VBox();
+        insertInvoiceBox.setSpacing(10);
+        insertInvoiceBox.setPadding(new Insets(0, 5, 0, 5));
+        loadInsertInvoice(insertInvoiceBox);
+
         HBox invoiceButtons = new HBox();
+        invoiceButtons.setSpacing(5);
         Button invoiceAdd = new Button("New invoice");
         Button invoiceRemove = new Button("Remove invoice");
         invoiceButtons.getChildren().setAll(invoiceAdd, invoiceRemove);
@@ -83,10 +85,18 @@ public class Gooey extends Application {
         ListView<Customer> customerList = new ListView<>();
         customerList.setItems(FXCollections.observableArrayList(customerDAO.getAllCustomers()));
 
+        VBox insertCustomerBox = new VBox();
+        insertCustomerBox.setSpacing(10);
+        insertCustomerBox.setPadding(new Insets(0, 5, 0, 5));
+        loadInsertCustomer(insertCustomerBox, customerList, customerBox);
+
         HBox customerButtons = new HBox();
+        customerButtons.setSpacing(5);
         Button customerAdd = new Button("New customer");
         Button customerRemove = new Button("Remove customer");
         customerButtons.getChildren().setAll(customerAdd, customerRemove);
+
+        customerAdd.setOnAction(e -> borderPane.setCenter((insertCustomerBox)));
 
         Button customerBtn = new Button("Customers");
         customerBtn.setOnAction(e -> {borderPane.setCenter(customerBox);
@@ -104,6 +114,7 @@ public class Gooey extends Application {
         productList.setItems(FXCollections.observableArrayList(productDAO.getAllProducts()));
 
         HBox productButtons = new HBox();
+        productButtons.setSpacing(5);
         Button productAdd = new Button("New product");
         Button productRemove = new Button("Remove product");
         productButtons.getChildren().setAll(productAdd, productRemove);
@@ -121,6 +132,70 @@ public class Gooey extends Application {
         borderPane.setLeft(invoiceList);
         borderPane.setBottom(invoiceButtons);
         primaryStage.setScene(new Scene(scrollPane, 800, 400));
+    }
+
+    private void loadInsertCustomer(VBox insertCustomerBox, ListView<Customer> customerList, HBox customerBox) {
+        TextField cstmrNmTxtFld = new TextField("");
+        TextField cstmrStreetNrTxtFld = new TextField("");
+        TextField cstmrStreetNmTxtFld = new TextField("");
+        TextField cstmrPostCodeTxtFld = new TextField("");
+        TextField cstmrPostTwnTxtFld = new TextField("");
+        TextField cstmrPhoneTxtFld = new TextField("");
+        TextField cstmrAccountTxtFld = new TextField("");
+
+        HBox cstmrNmBox = new HBox(new Label("Customer name"), cstmrNmTxtFld);
+        HBox cstmrStreetNrBox = new HBox(new Label("Street number"), cstmrStreetNrTxtFld);
+        HBox cstmrStreetNmBox = new HBox(new Label("Street name"), cstmrStreetNmTxtFld);
+        HBox cstmrPostCodeBox = new HBox(new Label("Postal code"), cstmrPostCodeTxtFld);
+        HBox cstmrPostTwnBox = new HBox(new Label("Postal town"), cstmrPostTwnTxtFld);
+        HBox cstmrPhoneBox = new HBox(new Label("Phone number"), cstmrPhoneTxtFld);
+        HBox cstmrAccountBox = new HBox(new Label("Account number"), cstmrAccountTxtFld);
+
+        Customer customer = new Customer();
+
+        Button insertBtn = new Button("Done");
+        insertBtn.setOnAction(e -> {
+            System.out.println(cstmrNmTxtFld.getText());
+            if(cstmrNmTxtFld.getText().isEmpty() || cstmrStreetNrTxtFld.getText().isEmpty() ||
+                    cstmrStreetNmTxtFld.getText().isEmpty() || cstmrPostCodeTxtFld.getText().isEmpty() ||
+                    cstmrPostTwnTxtFld.getText().isEmpty() || cstmrPhoneTxtFld.getText().isEmpty() ||
+                    cstmrAccountTxtFld.getText().isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setHeaderText(null);
+                alert.setContentText("One or more of the text fields are empty.");
+                alert.showAndWait();
+            } else {
+                int addID = addressDAO.insertAddress(cstmrStreetNrTxtFld.getText(), cstmrStreetNmTxtFld.getText(),
+                        cstmrPostCodeTxtFld.getText(), cstmrPostTwnTxtFld.getText());
+                int cusID = customerDAO.insertCustomer(cstmrNmTxtFld.getText(), addID, cstmrPhoneTxtFld.getText(),
+                        cstmrAccountTxtFld.getText());
+
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setHeaderText(null);
+                alert.setContentText("Customer added.");
+                alert.showAndWait();
+
+                customer.setId(cusID);
+                customer.setAddressId(addID);
+                customer.setAccount(cstmrAccountTxtFld.getText());
+                customer.setName(cstmrNmTxtFld.getText());
+                customer.setPhone(cstmrPhoneTxtFld.getText());
+                customer.setAddress(addressDAO.getAddress(addID));
+
+                customerList.getItems().add(customer);
+                borderPane.setCenter(customerBox);
+            }
+        });
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> borderPane.setCenter(customerBox));
+
+        insertCustomerBox.getChildren().setAll(cstmrNmBox, cstmrStreetNrBox, cstmrStreetNmBox, cstmrPostCodeBox,
+                cstmrPostTwnBox, cstmrPhoneBox, cstmrAccountBox, insertBtn, back);
+    }
+
+    private void loadInsertInvoice(VBox insertInvoiceBox) {
+
     }
 
     private void loadInvoice(int id, HBox invoiceBox) {

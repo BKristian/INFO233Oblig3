@@ -39,4 +39,24 @@ public class CustomerDAO {
         }
         return customers;
     }
+
+    public int insertCustomer(String cusNm, int cusAddress, String phone, String account) {
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+            PreparedStatement pstmt = connection.prepareStatement("INSERT INTO customer (customer_id, " +
+                    "customer_name, address, phone_number, billing_account) VALUES (?, ?, ?, ?, ?)");
+            PreparedStatement max = connection.prepareStatement("SELECT * FROM customer ORDER BY customer_id DESC LIMIT 1")) {
+            ResultSet rs = max.executeQuery();
+            int newID = rs.getInt("customer_id") + 1;
+            pstmt.setInt(1, newID);
+            pstmt.setString(2, cusNm);
+            pstmt.setInt(3, cusAddress);
+            pstmt.setString(4, phone);
+            pstmt.setString(5, account);
+            pstmt.executeUpdate();
+            return newID;
+        } catch (SQLException e) {
+            System.out.println("SQLException in CustomerDAO.insertCustomer: " + e.getMessage());
+        }
+        return -1;
+    }
 }

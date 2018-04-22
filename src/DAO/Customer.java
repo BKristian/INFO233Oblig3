@@ -14,6 +14,10 @@ public class Customer {
         address = new AddressDAO().getAddress(addressId);
     }
 
+    public Customer() {
+
+    }
+
     public int getId() {
         return id;
     }

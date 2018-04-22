@@ -39,4 +39,25 @@ public class AddressDAO {
         }
         return addresses;
     }
+
+    public int insertAddress(String streetNr, String streetNm, String postalCd, String postalTwn) {
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO address (address_id, street_number, " +
+                     "street_name, postal_code, postal_town) VALUES (? ,?, ?, ?, ?)");
+             PreparedStatement max = connection.prepareStatement("SELECT * FROM address ORDER BY address_id DESC LIMIT 1")) {
+            ResultSet rs = max.executeQuery();
+            int newID = rs.getInt("address_id") + 1;
+            rs.close();
+            pstmt.setInt(1, newID);
+            pstmt.setString(2, streetNr);
+            pstmt.setString(3, streetNm);
+            pstmt.setString(4, postalCd);
+            pstmt.setString(5, postalTwn);
+            pstmt.executeUpdate();
+            return newID;
+        } catch (SQLException e) {
+            System.out.println("SQLException in AddressDAO.insertAddress: " + e.getMessage());
+        }
+        return -1;
+    }
 }
