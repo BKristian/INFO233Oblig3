@@ -13,6 +13,14 @@ public class Address {
         fullAddress = streetName + " " + streetNr + ", " + postCode + " " + postTown;
     }
 
+    public Address(String streetNr, String streetName, String postCode, String postTown) {
+        this.streetNr = streetNr;
+        this.streetName = streetName;
+        this.postCode = postCode;
+        this.postTown = postTown;
+        fullAddress = streetName + " " + streetNr + ", " + postCode + " " + postTown;
+    }
+
     public int getId() {
         return id;
     }

@@ -14,8 +14,12 @@ public class Customer {
         address = new AddressDAO().getAddress(addressId);
     }
 
-    public Customer() {
-
+    public Customer(int addressId, String name, String phone, String account) {
+        this.addressId = addressId;
+        this.name = name;
+        this.phone = phone;
+        this.account = account;
+        address = new AddressDAO().getAddress(addressId);
     }
 
     public int getId() {

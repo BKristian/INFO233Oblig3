@@ -54,21 +54,27 @@ public class Gooey extends Application {
         HBox invoiceBox = new HBox();
         invoiceBox.setSpacing(10);
         invoiceBox.setPadding(new Insets(0, 5, 0, 5));
-        loadInvoice(1, invoiceBox);
 
         ListView<Invoice> invoiceList = new ListView<>();
         invoiceList.setItems(FXCollections.observableArrayList(invoiceDAO.getAllInvoices()));
+        invoiceList.getSelectionModel().selectFirst();
+        invoiceList.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
+                loadInvoice(newValue.getId(), invoiceBox)));
+
+        loadInvoice(invoiceList.getSelectionModel().getSelectedItem().getId(), invoiceBox);
 
         VBox insertInvoiceBox = new VBox();
         insertInvoiceBox.setSpacing(10);
         insertInvoiceBox.setPadding(new Insets(0, 5, 0, 5));
-        loadInsertInvoice(insertInvoiceBox);
+        loadInsertInvoice(insertInvoiceBox, invoiceList, invoiceBox);
 
         HBox invoiceButtons = new HBox();
         invoiceButtons.setSpacing(5);
         Button invoiceAdd = new Button("New invoice");
         Button invoiceRemove = new Button("Remove invoice");
         invoiceButtons.getChildren().setAll(invoiceAdd, invoiceRemove);
+
+        invoiceAdd.setOnAction(e -> borderPane.setCenter((insertInvoiceBox)));
 
         Button invoiceBtn = new Button("Invoices");
         invoiceBtn.setOnAction(e -> {borderPane.setCenter(invoiceBox);
@@ -80,14 +86,18 @@ public class Gooey extends Application {
         HBox customerBox = new HBox();
         customerBox.setSpacing(10);
         customerBox.setPadding(new Insets(0, 5, 0, 5));
-        loadCustomer(1, customerBox);
 
         ListView<Customer> customerList = new ListView<>();
         customerList.setItems(FXCollections.observableArrayList(customerDAO.getAllCustomers()));
+        customerList.getSelectionModel().selectFirst();
+        customerList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+                loadCustomer(newValue.getId(), customerBox));
+
+        loadCustomer(customerList.getSelectionModel().getSelectedItem().getId(), customerBox);
 
         VBox insertCustomerBox = new VBox();
         insertCustomerBox.setSpacing(10);
-        insertCustomerBox.setPadding(new Insets(0, 5, 0, 5));
+        insertCustomerBox.setPadding(new Insets(5, 5, 0, 5));
         loadInsertCustomer(insertCustomerBox, customerList, customerBox);
 
         HBox customerButtons = new HBox();
@@ -108,16 +118,27 @@ public class Gooey extends Application {
         HBox productBox = new HBox();
         productBox.setSpacing(10);
         productBox.setPadding(new Insets(0, 5, 0, 5));
-        loadProduct(1, productBox);
 
         ListView<Product> productList = new ListView<>();
         productList.setItems(FXCollections.observableArrayList(productDAO.getAllProducts()));
+        productList.getSelectionModel().selectFirst();
+        productList.getSelectionModel().selectedItemProperty().addListener(((observable, oldValue, newValue) ->
+                loadCustomer(newValue.getId(), productBox)));
+
+        loadProduct(productList.getSelectionModel().getSelectedItem().getId(), productBox);
+
+        VBox insertProductBox = new VBox();
+        insertProductBox.setSpacing(10);
+        insertProductBox.setPadding(new Insets(5, 5, 0, 5));
+        loadInsertProduct(insertProductBox, productList, customerBox);
 
         HBox productButtons = new HBox();
         productButtons.setSpacing(5);
         Button productAdd = new Button("New product");
         Button productRemove = new Button("Remove product");
         productButtons.getChildren().setAll(productAdd, productRemove);
+
+        productAdd.setOnAction(e -> borderPane.setCenter((insertProductBox)));
 
         Button productBtn = new Button("Products");
         productBtn.setOnAction(e -> {borderPane.setCenter(productBox);
@@ -134,6 +155,24 @@ public class Gooey extends Application {
         primaryStage.setScene(new Scene(scrollPane, 800, 400));
     }
 
+    private void loadInsertProduct(VBox insertProductBox, ListView<Product> productList, HBox productBox) {
+        TextField nameField = new TextField("");
+        TextField descripField = new TextField("");
+        TextField categoField = new TextField("");
+        TextField priceField = new TextField("");
+
+        HBox nameBox = new HBox(new Label("Product name: "), nameField);
+        HBox descripBox = new HBox(new Label("Description: "), descripField);
+        HBox categoBox = new HBox(new Label("Category: "), categoField);
+        HBox priceBox = new HBox(new Label("Price: "), priceField);
+
+        Button insertBtn = new Button("Done");
+        insertBtn.setOnAction(e -> {
+            if(nameField.getText().isEmpty() || descripField.getText().isEmpty() || categoField.getText().isEmpty() ||
+                    priceField.getText().isEmpty())
+        });
+    }
+
     private void loadInsertCustomer(VBox insertCustomerBox, ListView<Customer> customerList, HBox customerBox) {
         TextField cstmrNmTxtFld = new TextField("");
         TextField cstmrStreetNrTxtFld = new TextField("");
@@ -143,19 +182,18 @@ public class Gooey extends Application {
         TextField cstmrPhoneTxtFld = new TextField("");
         TextField cstmrAccountTxtFld = new TextField("");
 
-        HBox cstmrNmBox = new HBox(new Label("Customer name"), cstmrNmTxtFld);
-        HBox cstmrStreetNrBox = new HBox(new Label("Street number"), cstmrStreetNrTxtFld);
-        HBox cstmrStreetNmBox = new HBox(new Label("Street name"), cstmrStreetNmTxtFld);
-        HBox cstmrPostCodeBox = new HBox(new Label("Postal code"), cstmrPostCodeTxtFld);
-        HBox cstmrPostTwnBox = new HBox(new Label("Postal town"), cstmrPostTwnTxtFld);
-        HBox cstmrPhoneBox = new HBox(new Label("Phone number"), cstmrPhoneTxtFld);
-        HBox cstmrAccountBox = new HBox(new Label("Account number"), cstmrAccountTxtFld);
+        HBox cstmrNmBox = new HBox(new Label("Customer name: "), cstmrNmTxtFld);
+        HBox cstmrStreetNrBox = new HBox(new Label("Street number: "), cstmrStreetNrTxtFld);
+        HBox cstmrStreetNmBox = new HBox(new Label("Street name: "), cstmrStreetNmTxtFld);
+        HBox cstmrPostCodeBox = new HBox(new Label("Postal code: "), cstmrPostCodeTxtFld);
+        HBox cstmrPostTwnBox = new HBox(new Label("Postal town: "), cstmrPostTwnTxtFld);
+        HBox cstmrPhoneBox = new HBox(new Label("Phone number: "), cstmrPhoneTxtFld);
+        HBox cstmrAccountBox = new HBox(new Label("Account number: "), cstmrAccountTxtFld);
 
-        Customer customer = new Customer();
+
 
         Button insertBtn = new Button("Done");
         insertBtn.setOnAction(e -> {
-            System.out.println(cstmrNmTxtFld.getText());
             if(cstmrNmTxtFld.getText().isEmpty() || cstmrStreetNrTxtFld.getText().isEmpty() ||
                     cstmrStreetNmTxtFld.getText().isEmpty() || cstmrPostCodeTxtFld.getText().isEmpty() ||
                     cstmrPostTwnTxtFld.getText().isEmpty() || cstmrPhoneTxtFld.getText().isEmpty() ||
@@ -165,22 +203,15 @@ public class Gooey extends Application {
                 alert.setContentText("One or more of the text fields are empty.");
                 alert.showAndWait();
             } else {
-                int addID = addressDAO.insertAddress(cstmrStreetNrTxtFld.getText(), cstmrStreetNmTxtFld.getText(),
+                Address address = new Address(cstmrStreetNrTxtFld.getText(), cstmrStreetNmTxtFld.getText(),
                         cstmrPostCodeTxtFld.getText(), cstmrPostTwnTxtFld.getText());
-                int cusID = customerDAO.insertCustomer(cstmrNmTxtFld.getText(), addID, cstmrPhoneTxtFld.getText(),
+                int addID = addressDAO.insertAddress(address);
+                address.setId(addID);
+
+                Customer customer = new Customer(addID, cstmrNmTxtFld.getText(), cstmrPhoneTxtFld.getText(),
                         cstmrAccountTxtFld.getText());
-
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setHeaderText(null);
-                alert.setContentText("Customer added.");
-                alert.showAndWait();
-
+                int cusID = customerDAO.insertCustomer(customer);
                 customer.setId(cusID);
-                customer.setAddressId(addID);
-                customer.setAccount(cstmrAccountTxtFld.getText());
-                customer.setName(cstmrNmTxtFld.getText());
-                customer.setPhone(cstmrPhoneTxtFld.getText());
-                customer.setAddress(addressDAO.getAddress(addID));
 
                 customerList.getItems().add(customer);
                 borderPane.setCenter(customerBox);
@@ -194,8 +225,47 @@ public class Gooey extends Application {
                 cstmrPostTwnBox, cstmrPhoneBox, cstmrAccountBox, insertBtn, back);
     }
 
-    private void loadInsertInvoice(VBox insertInvoiceBox) {
+    private void loadInsertInvoice(VBox insertInvoiceBox, ListView<Invoice> invoiceList, HBox invoiceBox) {
+        TextField invoiceCstmr = new TextField("");
+        TextField invoiceDate = new TextField("");
+        TextField products = new TextField("");
 
+        HBox invoiceCstmrBox = new HBox(new Label("Customer ID: "), invoiceCstmr);
+        HBox invoiceDateBox = new HBox(new Label("Due date: "), invoiceDate);
+        HBox productsBox = new HBox(new Label("Products: "), products, new Label("Seperate product IDs with commas."));
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText(null);
+
+        //SimpleDateFormat dateFormat = new SimpleDateFormat("ddMMyyyy");
+
+        Button insertBtn = new Button("Done");
+        insertBtn.setOnAction(e -> {
+            if(invoiceCstmr.getText().isEmpty() || invoiceDate.getText().isEmpty()
+                    || Integer.parseInt(invoiceCstmr.getText()) < 1) {
+                alert.setContentText("One or more of the text fields are empty.");
+                alert.showAndWait();
+            } else if(customerDAO.getCustomer(Integer.parseInt(invoiceCstmr.getText())) == null) {
+                alert.setContentText("Customer with ID " + invoiceCstmr.getText() + " does not exist.");
+            } else { //TODO sjekk at dato til invoice er en dato
+                String[] productArr = products.getText().split(",");
+                Invoice invoice = new Invoice(Integer.parseInt(invoiceCstmr.getText()), invoiceDate.getText());
+                for (String s : productArr) {
+                    int i = Integer.parseInt(s.trim());
+                    invoice.getItems().add(productDAO.getProduct(i));
+                }
+
+                int invID = invoiceDAO.insertInvoice(invoice);
+                invoice.setId(invID);
+                invoiceList.getItems().add(invoice);
+                borderPane.setCenter(invoiceBox);
+            }
+        });
+
+        Button back = new Button("Back");
+        back.setOnAction(e -> borderPane.setCenter(invoiceBox));
+
+        insertInvoiceBox.getChildren().setAll(invoiceCstmrBox, invoiceDateBox, productsBox, insertBtn, back);
     }
 
     private void loadInvoice(int id, HBox invoiceBox) {
@@ -208,7 +278,8 @@ public class Gooey extends Application {
         StringBuilder allProducts = new StringBuilder();
         double total = 0;
         for (Product p : invoice.getItems()) {
-            allProducts.append(p.getName() + ", kr " + p.getPrice() + "\n");
+            String s = p.getName() + ", kr " + p.getPrice() + "\n";
+            allProducts.append(s);
             total += p.getPrice();
         }
 

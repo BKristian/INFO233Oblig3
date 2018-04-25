@@ -1,7 +1,7 @@
 package DAO;
 
 import java.util.ArrayList;
-
+//TODO gjøre at Invoice tar dato i stedet for String for date-variabel
 public class Invoice {
     private int id, customerId;
     private String date;
@@ -12,6 +12,16 @@ public class Invoice {
         this.customerId = customerId;
         this.date = date;
         items = new ArrayList<>();
+    }
+
+    public Invoice(int customerId, String date) {
+        this.customerId = customerId;
+        this.date = date;
+        items = new ArrayList<>();
+    }
+
+    public Invoice() {
+
     }
 
     public void add(Product product) {

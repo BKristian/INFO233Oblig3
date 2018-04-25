@@ -10,25 +10,26 @@ public class InvoiceDAO {
         Invoice invoice;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM invoice_items WHERE invoice = ?");
-             PreparedStatement pstmtInv = connection.prepareStatement("SELECT * FROM invoice WHERE invoice_id = ?");
-             PreparedStatement pstmtProd = connection.prepareStatement("SELECT * FROM product WHERE product_id = ?")) {
+             PreparedStatement pstmtInv = connection.prepareStatement("SELECT * FROM invoice WHERE invoice_id = ?")) {
             pstmt.setInt(1, id);
             ResultSet rs = pstmt.executeQuery();
 
             pstmtInv.setInt(1, rs.getInt("invoice"));
             ResultSet rsInv = pstmtInv.executeQuery();
 
-            pstmtProd.setInt(1, rs.getInt("product"));
-            ResultSet rsProd = pstmtProd.executeQuery();
 
             invoice = new Invoice(id, rsInv.getInt("customer"), rsInv.getString("dato"));
 
-            while (rsProd.next()) {
-                invoice.add(new ProductDAO().getProduct(rsProd.getInt("product_id")));
+            ArrayList<Integer> prodArr = new ArrayList<>();
+
+            while (rs.next()) {
+                prodArr.add(rs.getInt("product"));
+            }
+            for (Integer i : prodArr) {
+                invoice.add(new ProductDAO().getProduct(i));
             }
             rs.close();
             rsInv.close();
-            rsProd.close();
         } catch (SQLException e) {
             System.out.println("SQLException in InvoiceDAO.getInvoice: " + e.getMessage());
             invoice = null;
@@ -51,5 +52,32 @@ public class InvoiceDAO {
             invoices = null;
         }
         return invoices;
+    }
+
+    public int insertInvoice(Invoice invoice) {
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO invoice (invoice_id, " +
+                     "customer, dato) VALUES (?, ?, ?)");
+             PreparedStatement max = connection.prepareStatement("SELECT * FROM invoice ORDER BY invoice_id DESC LIMIT 1");
+             PreparedStatement pstmtItems = connection.prepareStatement("INSERT INTO invoice_items (invoice, product) " +
+                     "VALUES (?, ?)")) {
+            ResultSet rs = max.executeQuery();
+            int newID = rs.getInt("invoice_id") + 1;
+            rs.close();
+            pstmt.setInt(1, newID);
+            pstmt.setInt(2, invoice.getCustomerId());
+            pstmt.setString(3, invoice.getDate());
+            pstmt.executeUpdate();
+
+            for (Product p : invoice.getItems()) {
+                pstmtItems.setInt(1, newID);
+                pstmtItems.setInt(2, p.getId());
+                pstmtItems.executeUpdate();
+            }
+            return newID;
+        } catch (SQLException e) {
+            System.out.println("SQLException in InvoiceDAO.insertInvoice: " + e.getMessage());
+        }
+        return -1;
     }
 }

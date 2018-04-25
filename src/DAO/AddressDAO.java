@@ -40,7 +40,7 @@ public class AddressDAO {
         return addresses;
     }
 
-    public int insertAddress(String streetNr, String streetNm, String postalCd, String postalTwn) {
+    public int insertAddress(Address address) {
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("INSERT INTO address (address_id, street_number, " +
                      "street_name, postal_code, postal_town) VALUES (? ,?, ?, ?, ?)");
@@ -49,10 +49,10 @@ public class AddressDAO {
             int newID = rs.getInt("address_id") + 1;
             rs.close();
             pstmt.setInt(1, newID);
-            pstmt.setString(2, streetNr);
-            pstmt.setString(3, streetNm);
-            pstmt.setString(4, postalCd);
-            pstmt.setString(5, postalTwn);
+            pstmt.setString(2, address.getStreetNr());
+            pstmt.setString(3, address.getStreetName());
+            pstmt.setString(4, address.getPostCode());
+            pstmt.setString(5, address.getPostTown());
             pstmt.executeUpdate();
             return newID;
         } catch (SQLException e) {
