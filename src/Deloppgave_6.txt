@@ -1,7 +1,16 @@
-For øyeblikket har jeg brukt singleton design for DatabaseSingleton. Dette er noe som kommer til å bli endret på i løpet
-av egenrettingen. Funksjonelt design blir brukt til EventHandleren til Buttons, og det kan vel sies at observatør design
-brukes med tankte på at jeg bruker EventHandler?
+Hvilken designmaler har du brukt?
+    Jeg har brukt DAO. Jeg kunne brukt Singleton for å håndtere connections, siden det kun skal være en connection
+    åpen av gangen.
 
-Har ikke bevisst brukt et designmal noen sted utenom singleton, som nok blir endret til endelig innlevering.
-Hvis arv og DAO teller som deignmal, så har jeg brukt det. Arv blir brukt i klassen DAO for å gi alle subklassene til
-DAO tilgang til connection uten at jeg må gjenta kode. DAOene blir brukt av Gooey til å hente informasjon fra databasen.
+Hvordan har du brukt dem?
+    DAO blir brukt for å få tilgang til databasen. Jeg har ikke brukt Singleton selv om det ved første blikk virker
+    intuitivt for meg å bruke det, fordi vi fikk melding om å unngå Singleton-design.
+
+Hvorfor har du brukt dem?
+    DAO er nyttig fordi man slipper svære try-with-resources blokker andre steder i koden.
+
+Hvordan er de nyttig?
+    Singleton hadde vært nyttig for å forenkle try-with-resources blokkene.
+
+Er det andre designmaler du kunne ha brukt som kunne gjort utviklingen enklere?
+    Vet ikke, har ikke mye peiling på designmaler.

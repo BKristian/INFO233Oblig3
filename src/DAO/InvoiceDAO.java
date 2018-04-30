@@ -7,15 +7,17 @@ import java.util.ArrayList;
 public class InvoiceDAO {
 
     public Invoice getInvoice(int id) {
+        ResultSet rs = null;
+        ResultSet rsInv = null;
         Invoice invoice;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM invoice_items WHERE invoice = ?");
              PreparedStatement pstmtInv = connection.prepareStatement("SELECT * FROM invoice WHERE invoice_id = ?")) {
             pstmt.setInt(1, id);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
 
             pstmtInv.setInt(1, rs.getInt("invoice"));
-            ResultSet rsInv = pstmtInv.executeQuery();
+            rsInv = pstmtInv.executeQuery();
 
 
             invoice = new Invoice(id, rsInv.getInt("customer"), rsInv.getString("dato"));
@@ -28,11 +30,18 @@ public class InvoiceDAO {
             for (Integer i : prodArr) {
                 invoice.add(new ProductDAO().getProduct(i));
             }
-            rs.close();
-            rsInv.close();
         } catch (SQLException e) {
             System.out.println("SQLException in InvoiceDAO.getInvoice: " + e.getMessage());
             invoice = null;
+        } finally {
+            if (rs != null && rsInv != null) {
+                try {
+                    rs.close();
+                    rsInv.close();
+                } catch (SQLException e) {
+                    System.out.println("SQLException in InvoiceDAO.getInvoice finally: " + e.getMessage());
+                }
+            }
         }
         return invoice;
     }
@@ -55,29 +64,58 @@ public class InvoiceDAO {
     }
 
     public int insertInvoice(Invoice invoice) {
+        ResultSet rs = null;
         try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
              PreparedStatement pstmt = connection.prepareStatement("INSERT INTO invoice (invoice_id, " +
                      "customer, dato) VALUES (?, ?, ?)");
              PreparedStatement max = connection.prepareStatement("SELECT * FROM invoice ORDER BY invoice_id DESC LIMIT 1");
              PreparedStatement pstmtItems = connection.prepareStatement("INSERT INTO invoice_items (invoice, product) " +
                      "VALUES (?, ?)")) {
-            ResultSet rs = max.executeQuery();
+            rs = max.executeQuery();
             int newID = rs.getInt("invoice_id") + 1;
-            rs.close();
             pstmt.setInt(1, newID);
             pstmt.setInt(2, invoice.getCustomerId());
             pstmt.setString(3, invoice.getDate());
             pstmt.executeUpdate();
 
+            pstmtItems.setInt(1, newID);
             for (Product p : invoice.getItems()) {
-                pstmtItems.setInt(1, newID);
                 pstmtItems.setInt(2, p.getId());
                 pstmtItems.executeUpdate();
             }
             return newID;
         } catch (SQLException e) {
             System.out.println("SQLException in InvoiceDAO.insertInvoice: " + e.getMessage());
+        } finally {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e) {
+                    System.out.println("SQLException in InvoiceDAO.insertInvoice finally: " + e.getMessage());
+                }
+            }
         }
         return -1;
+    }
+
+    public void updateInvoice(Invoice invoice) {
+        try (Connection connection = DriverManager.getConnection(Gooey.getUrl());
+            PreparedStatement pstmtInv = connection.prepareStatement("UPDATE invoice SET customer = ?, " +
+                    " dato = ? WHERE invoice_id = ?");
+            PreparedStatement pstmtItems = connection.prepareStatement("UPDATE invoice_items SET " +
+                    "product = ? WHERE invoice = ?")) {
+            pstmtItems.setInt(2, invoice.getId());
+            for (Product p : invoice.getItems()) {
+                pstmtItems.setInt(1, p.getId());
+            }
+            pstmtItems.executeUpdate();
+
+            pstmtInv.setInt(1, invoice.getCustomerId());
+            pstmtInv.setString(2, invoice.getDate());
+            pstmtInv.setInt(3, invoice.getId());
+            pstmtInv.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("SQLException in InvoiceDAO.updateInvoice: " + e.getMessage());
+        }
     }
 }
